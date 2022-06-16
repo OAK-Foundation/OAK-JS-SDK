@@ -10,10 +10,10 @@ test('scheduler.buildScheduleNativeTransferExtrinsic works', async () => {
   await checkBalance(keyringPair);
   const extrinsicParams = getNativeTransferExtrinsicParams();
   const { executionTimestamps } = extrinsicParams;
-  
+
   // schedule notify task and verify
   const taskID = await scheduleNativeTransferAndVerify(scheduler, observer, keyringPair, extrinsicParams);
-  
+
   // Cancel task and verify
   await cancelTaskAndVerify(scheduler, observer, keyringPair, taskID, executionTimestamps[0]);
 });
