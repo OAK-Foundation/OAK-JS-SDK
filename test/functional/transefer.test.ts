@@ -8,17 +8,14 @@ beforeEach(() => {
 test('scheduler.buildScheduleNativeTransferExtrinsic works', async () => {
   const { scheduler, observer, keyringPair } = await getContext();
   await checkBalance(keyringPair);
-  console.log('checked balance')
   const extrinsicParams = getNativeTransferExtrinsicParams();
   const { executionTimestamps } = extrinsicParams;
   
   // schedule notify task and verify
   const taskID = await scheduleNativeTransferAndVerify(scheduler, observer, keyringPair, extrinsicParams);
-  console.log('scheduled native transfer and verify')
   
   // Cancel task and verify
   await cancelTaskAndVerify(scheduler, observer, keyringPair, taskID, executionTimestamps[0]);
-  console.log('cancelled task and verify')
 });
 
 test('scheduler.buildScheduleNativeTransferExtrinsic will fail with duplicate providerID', async () => {
