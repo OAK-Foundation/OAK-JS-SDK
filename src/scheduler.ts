@@ -13,6 +13,7 @@ import {
   OakChainWebsockets,
   RECURRING_TASK_LIMIT,
   SEC_IN_MIN,
+  AutomationAction,
 } from './constants'
 
 /**
@@ -56,8 +57,32 @@ export class Scheduler {
               ],
               type: 'Hash',
             },
+            getTimeAutomationFees: {
+              description: 'getTimeAutomationFees',
+              params: [
+                {
+                  name: 'action',
+                  type: 'AutomationAction',
+                },
+                {
+                  name: 'executions',
+                  type: 'u32',
+                },
+              ],
+              type: 'Balance',
+            }
           },
         },
+        types: {
+          AutomationAction: {
+            _enum: [
+              'Notify',
+              'NativeTransfer',
+              'XCMP',
+              'AutoCompoundDelgatedStake',
+            ]
+          }
+        }
       })
     }
     return this.api
@@ -128,6 +153,21 @@ export class Scheduler {
     // TODO: hack until we can merge correct types into polkadotAPI
     const taskIdCodec = await (polkadotApi.rpc as any).automationTime.generateTaskId(address, providedID)
     return taskIdCodec.toString()
+  }
+
+  /**
+   * GetTimeAutomationFees
+   * @param extrinsic
+   * @param address
+   * @returns fee
+   */
+   async getTimeAutomationFees(
+    action: AutomationAction,
+    executions: number,
+  ) : Promise<number> {
+    const polkadotApi = await this.getAPIClient()
+    const resultCodec = await (polkadotApi.rpc as any).automationTime.getTimeAutomationFees(action, executions);
+    return resultCodec.toJSON() as unknown as number
   }
 
   /**

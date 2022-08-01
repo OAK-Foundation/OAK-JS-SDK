@@ -23,3 +23,10 @@ export enum OakChains {
   STUR = 'STUR',
   TUR = 'TUR',
 }
+
+export enum AutomationAction {
+  Notify = 'Notify',
+  NativeTransfer = 'NativeTransfer',
+  XCMP = 'XCMP',
+  AutoCompoundDelgatedStake = 'AutoCompoundDelgatedStake',
+}
