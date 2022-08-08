@@ -16,6 +16,11 @@ import {
   AutomationAction,
 } from './constants'
 
+interface AutostakingResult {
+  period: number
+  apy: number,
+}
+
 /**
  * The constructor takes the input to create an API client to connect to the blockchain.
  * Further commands are performed via this API client in order to reach the blockchain.
@@ -70,6 +75,30 @@ export class Scheduler {
                 },
               ],
               type: 'Balance',
+            },
+            calculateOptimalAutostaking: {
+              description: 'calculateOptimalAutostaking',
+              params: [
+                {
+                  name: 'principal',
+                  type: 'i128',
+                },
+                {
+                  name: 'collator',
+                  type: 'AccountId',
+                },
+              ],
+              type: 'AutostakingResult',
+            },
+            getAutoCompoundDelegatedStakeTaskIds: {
+              description: 'calculateOptimalAutostaking',
+              params: [
+                {
+                  name: 'account_id',
+                  type: 'AccountId',
+                },
+              ],
+              type: 'Vec<Hash>',
             }
           },
         },
@@ -81,7 +110,11 @@ export class Scheduler {
               'XCMP',
               'AutoCompoundDelgatedStake',
             ]
-          }
+          },
+          AutostakingResult: {
+            period: "i32",
+            apy: "f64"
+          },
         }
       })
     }
@@ -168,6 +201,27 @@ export class Scheduler {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.getTimeAutomationFees(action, executions);
     return resultCodec.toJSON() as unknown as number
+  }
+
+    /**
+   * GetTimeAutomationFees
+   * @param principal
+   * @param collator
+   * @returns fee
+   */
+  async calculateOptimalAutostaking(
+    principal: number,
+    collator: string,
+  ) : Promise<AutostakingResult> {
+    const polkadotApi = await this.getAPIClient()
+    const resultCodec = await (polkadotApi.rpc as any).automationTime.calculateOptimalAutostaking(principal, collator)
+    return resultCodec.toJSON() as unknown as AutostakingResult
+  }
+
+  async getAutoCompoundDelegatedStakeTaskIds(account_id: string) {
+    const polkadotApi = await this.getAPIClient()
+    const resultCodec = await (polkadotApi.rpc as any).automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id)
+    return resultCodec.toJSON() as unknown as Array<string>;
   }
 
   /**
