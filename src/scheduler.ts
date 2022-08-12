@@ -223,7 +223,9 @@ export class Scheduler {
    * @param account
    * @returns list of autocompounding tasks
    */
-  async getAutoCompoundDelegatedStakeTaskIds(account_id: string) {
+  async getAutoCompoundDelegatedStakeTaskIds(
+    account_id: string
+  ): Promise<Array<string>> {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id)
     return resultCodec.toJSON() as unknown as Array<string>;
