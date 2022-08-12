@@ -63,7 +63,7 @@ export class Scheduler {
               type: 'Hash',
             },
             getTimeAutomationFees: {
-              description: 'getTimeAutomationFees',
+              description: 'Retrieve automation fees',
               params: [
                 {
                   name: 'action',
@@ -77,7 +77,7 @@ export class Scheduler {
               type: 'Balance',
             },
             calculateOptimalAutostaking: {
-              description: 'calculateOptimalAutostaking',
+              description: 'Calculate the optimal period to restake',
               params: [
                 {
                   name: 'principal',
@@ -91,7 +91,7 @@ export class Scheduler {
               type: 'AutostakingResult',
             },
             getAutoCompoundDelegatedStakeTaskIds: {
-              description: 'calculateOptimalAutostaking',
+              description: 'Return autocompounding tasks by account',
               params: [
                 {
                   name: 'account_id',
