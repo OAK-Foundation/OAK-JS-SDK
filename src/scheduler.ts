@@ -174,7 +174,7 @@ export class Scheduler {
   }
 
   /**
-   * GetTaskID: gets a txHash for a task.
+   * getTaskID: gets a txHash for a task.
    * Wallet Address and Provided ID are required inputs.
    * TxHash for a task will be returned.
    * @param address
@@ -189,9 +189,9 @@ export class Scheduler {
   }
 
   /**
-   * GetTimeAutomationFees
-   * @param extrinsic
-   * @param address
+   * getTimeAutomationFees
+   * @param action type
+   * @param executions
    * @returns fee
    */
    async getTimeAutomationFees(
@@ -203,11 +203,11 @@ export class Scheduler {
     return resultCodec.toJSON() as unknown as number
   }
 
-    /**
-   * GetTimeAutomationFees
+  /**
+   * calculateOptimalAutostaking
    * @param principal
    * @param collator
-   * @returns fee
+   * @returns duration and apy result
    */
   async calculateOptimalAutostaking(
     principal: number,
@@ -218,6 +218,11 @@ export class Scheduler {
     return resultCodec.toJSON() as unknown as AutostakingResult
   }
 
+  /**
+   * getAutoCompoundDelegatedStakeTaskIds
+   * @param account
+   * @returns list of autocompounding tasks
+   */
   async getAutoCompoundDelegatedStakeTaskIds(account_id: string) {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id)
