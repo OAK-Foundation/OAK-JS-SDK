@@ -16,7 +16,7 @@ test('scheduler.getTimeAutomationFees works', async () => {
 test('scheduler.calculateOptimalAutostaking works', async () => {
   const scheduler = new Scheduler(OakChains.STUR);
   const result = await scheduler.calculateOptimalAutostaking(10000000000, "691Fmzb8rhYmBxLvaqYEUApK22s3o6eCzC4whDY7dZZ83YYQ");
-  expect(_.isNil(result)).toEqual(false);
+  expect(Object.keys(result).sort()).toEqual(["apy", "period"].sort());
 });
 
 test('scheduler.getAutoCompoundDelegatedStakeTaskIds works', async () => {
