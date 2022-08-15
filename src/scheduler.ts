@@ -57,6 +57,28 @@ export class Scheduler {
               type: 'Hash',
             },
           },
+          xcmpHandler: {
+            fees: {
+              description: "Return XCMP fee for a automationTime.scheduleXCMPTask",
+              params: [
+                {
+                  name: 'encoded_xt',
+                  type: 'Bytes',
+                }
+              ],
+              type: 'u64',
+            },
+            crossChainAccount: {
+              description: "Find OAK's cross chain access account from an account",
+              params: [
+                {
+                  name: 'account_id',
+                  type: 'AccountId32',
+                }
+              ],
+              type: 'AccountId32',
+            },
+          },
         },
       })
     }
@@ -128,6 +150,34 @@ export class Scheduler {
     // TODO: hack until we can merge correct types into polkadotAPI
     const taskIdCodec = await (polkadotApi.rpc as any).automationTime.generateTaskId(address, providedID)
     return taskIdCodec.toString()
+  }
+
+  /**
+   * crossChainAccount: OAK's XCMP account on another chain.
+   * Account ID is required input
+   * Account ID will be returned.
+   * @param accountId
+   * @returns accountId
+   */
+  async crossChainAccount(accountId: string): Promise<string> {
+    const polkadotApi = await this.getAPIClient()
+    // TODO: hack until we can merge correct types into polkadotAPI
+    const resultCodec = await (polkadotApi.rpc as any).xcmpHandler.crossChainAccount(accountId)
+    return resultCodec.toString()
+  }
+
+  /**
+   * fees: Retreive fees required for scheduling an XCMP task
+   * Encoded extrinsic is required input
+   * Fee will be returned
+   * @param encodedXt
+   * @returns fee
+   */
+  async fees(encodedXt: string): Promise<string> {
+    const polkadotApi = await this.getAPIClient()
+    // TODO: hack until we can merge correct types into polkadotAPI
+    const resultCodec = await (polkadotApi.rpc as any).xcmpHandler.fees(encodedXt)
+    return resultCodec.toString()
   }
 
   /**
