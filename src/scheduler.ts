@@ -18,7 +18,7 @@ import {
 
 interface AutostakingResult {
   period: number
-  apy: number,
+  apy: number
 }
 
 /**
@@ -99,23 +99,18 @@ export class Scheduler {
                 },
               ],
               type: 'Vec<Hash>',
-            }
+            },
           },
         },
         types: {
           AutomationAction: {
-            _enum: [
-              'Notify',
-              'NativeTransfer',
-              'XCMP',
-              'AutoCompoundDelgatedStake',
-            ]
+            _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelgatedStake'],
           },
           AutostakingResult: {
-            period: "i32",
-            apy: "f64"
+            period: 'i32',
+            apy: 'f64',
           },
-        }
+        },
       })
     }
     return this.api
@@ -194,12 +189,9 @@ export class Scheduler {
    * @param executions
    * @returns fee
    */
-   async getTimeAutomationFees(
-    action: AutomationAction,
-    executions: number,
-  ) : Promise<number> {
+  async getTimeAutomationFees(action: AutomationAction, executions: number): Promise<number> {
     const polkadotApi = await this.getAPIClient()
-    const resultCodec = await (polkadotApi.rpc as any).automationTime.getTimeAutomationFees(action, executions);
+    const resultCodec = await (polkadotApi.rpc as any).automationTime.getTimeAutomationFees(action, executions)
     return resultCodec.toJSON() as unknown as number
   }
 
@@ -209,10 +201,7 @@ export class Scheduler {
    * @param collator
    * @returns duration and apy result
    */
-  async calculateOptimalAutostaking(
-    principal: number,
-    collator: string,
-  ) : Promise<AutostakingResult> {
+  async calculateOptimalAutostaking(principal: number, collator: string): Promise<AutostakingResult> {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.calculateOptimalAutostaking(principal, collator)
     return resultCodec.toPrimitive() as AutostakingResult
@@ -223,12 +212,10 @@ export class Scheduler {
    * @param account
    * @returns list of autocompounding tasks
    */
-  async getAutoCompoundDelegatedStakeTaskIds(
-    account_id: string
-  ): Promise<Array<string>> {
+  async getAutoCompoundDelegatedStakeTaskIds(account_id: string): Promise<Array<string>> {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id)
-    return resultCodec.toJSON() as unknown as Array<string>;
+    return resultCodec.toJSON() as unknown as Array<string>
   }
 
   /**
