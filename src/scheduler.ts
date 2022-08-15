@@ -215,7 +215,7 @@ export class Scheduler {
   ) : Promise<AutostakingResult> {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await (polkadotApi.rpc as any).automationTime.calculateOptimalAutostaking(principal, collator)
-    return resultCodec.toJSON() as unknown as AutostakingResult
+    return resultCodec.toPrimitive() as AutostakingResult
   }
 
   /**
