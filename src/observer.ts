@@ -49,10 +49,10 @@ export class Observer {
    * completion of the task.
    * @returns { task_id: 0xstring, execution_time: number }[]
    */
-  async getAutomationTimeMissedQueue(): Promise<MissedTask[]> {
+  async getAutomationTimeMissedQueue(): Promise<MissedTask[][]> {
     const polkadotApi = await this.getAPIClient()
-    const resultCodec = await polkadotApi.query['automationTime']['missedQueue']()
-    return resultCodec.toJSON() as unknown as MissedTask[]
+    const resultCodec = await polkadotApi.query['automationTime']['missedQueueV2']()
+    return resultCodec.toJSON() as unknown as MissedTask[][]
   }
 
   /**
@@ -60,10 +60,10 @@ export class Observer {
    * Current time slots are only in hours.
    * @returns 0xstring[]
    */
-  async getAutomationTimeTaskQueue(): Promise<string[]> {
+  async getAutomationTimeTaskQueue(): Promise<string[][]> {
     const polkadotApi = await this.getAPIClient()
-    const resultCodec = await polkadotApi.query['automationTime']['taskQueue']()
-    return resultCodec.toJSON() as string[]
+    const resultCodec = await polkadotApi.query['automationTime']['taskQueueV2']()
+    return resultCodec.toJSON() as string[][]
   }
 
   /**
@@ -72,10 +72,10 @@ export class Observer {
    * @param inputTime
    * @returns 0xstring[]
    */
-  async getAutomationTimeScheduledTasks(inputTime: number): Promise<string[] | null> {
+  async getAutomationTimeScheduledTasks(inputTime: number): Promise<string[][] | null> {
     const polkadotApi = await this.getAPIClient()
-    const resultCodec = await polkadotApi.query['automationTime']['scheduledTasks'](inputTime)
-    return resultCodec.toJSON() as string[] | null
+    const resultCodec = await polkadotApi.query['automationTime']['scheduledTasksV2'](inputTime)
+    return resultCodec.toJSON() as string[][] | null
   }
 
   /**
@@ -84,9 +84,9 @@ export class Observer {
    * @param taskID
    * @returns AutomationTask
    */
-  async getAutomationTimeTasks(taskID: HexString): Promise<AutomationTask> {
+  async getAutomationTimeTasks(accountID: string, taskID: HexString): Promise<AutomationTask> {
     const polkadotApi = await this.getAPIClient()
-    const resultCodec = await polkadotApi.query['automationTime']['tasks'](taskID)
+    const resultCodec = await polkadotApi.query['automationTime']['accountTasks'](accountID, taskID)
     return resultCodec.toJSON() as unknown as AutomationTask
   }
 }
