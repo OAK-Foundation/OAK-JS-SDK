@@ -45,7 +45,7 @@ class Observer {
      */
     async getAutomationTimeMissedQueue() {
         const polkadotApi = await this.getAPIClient();
-        const resultCodec = await polkadotApi.query['automationTime']['missedQueue']();
+        const resultCodec = await polkadotApi.query['automationTime']['missedQueueV2']();
         return resultCodec.toJSON();
     }
     /**
@@ -55,7 +55,7 @@ class Observer {
      */
     async getAutomationTimeTaskQueue() {
         const polkadotApi = await this.getAPIClient();
-        const resultCodec = await polkadotApi.query['automationTime']['taskQueue']();
+        const resultCodec = await polkadotApi.query['automationTime']['taskQueueV2']();
         return resultCodec.toJSON();
     }
     /**
@@ -66,7 +66,7 @@ class Observer {
      */
     async getAutomationTimeScheduledTasks(inputTime) {
         const polkadotApi = await this.getAPIClient();
-        const resultCodec = await polkadotApi.query['automationTime']['scheduledTasks'](inputTime);
+        const resultCodec = await polkadotApi.query['automationTime']['scheduledTasksV2'](inputTime);
         return resultCodec.toJSON();
     }
     /**
@@ -75,9 +75,9 @@ class Observer {
      * @param taskID
      * @returns AutomationTask
      */
-    async getAutomationTimeTasks(taskID) {
+    async getAutomationTimeTasks(accountID, taskID) {
         const polkadotApi = await this.getAPIClient();
-        const resultCodec = await polkadotApi.query['automationTime']['tasks'](taskID);
+        const resultCodec = await polkadotApi.query['automationTime']['accountTasks'](accountID, taskID);
         return resultCodec.toJSON();
     }
 }

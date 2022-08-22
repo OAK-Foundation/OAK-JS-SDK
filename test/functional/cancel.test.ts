@@ -16,7 +16,8 @@ test('Cancel failed with incorrect format taskID', async () => {
 });
 
 test('Cancel failed with nonexistent taskID', async () => {
-  const nonexistentTaskID = "Please put a string of length greater than or equal to 32 bytes here, and make sure it is a non-existing taskID.";
+  // Please put a string of length greater than or equal to 32 bytes here, and make sure it is a non-existing taskID.
+  const nonexistentTaskID = "12345678901234567890123456789012";
   
   const { scheduler, keyringPair } = await getContext();
   await checkBalance(keyringPair);
