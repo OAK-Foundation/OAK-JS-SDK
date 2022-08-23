@@ -101,15 +101,6 @@ export class Scheduler {
               type: 'Vec<Hash>',
             },
           },
-        },
-        types: {
-          AutomationAction: {
-            _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelgatedStake'],
-          },
-          AutostakingResult: {
-            period: 'i32',
-            apy: 'f64',
-          },
           xcmpHandler: {
             fees: {
               description: "Return XCMP fee for a automationTime.scheduleXCMPTask",
@@ -131,6 +122,15 @@ export class Scheduler {
               ],
               type: 'AccountId32',
             },
+          },
+        },
+        types: {
+          AutomationAction: {
+            _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelgatedStake'],
+          },
+          AutostakingResult: {
+            period: 'i32',
+            apy: 'f64',
           },
         },
       })
