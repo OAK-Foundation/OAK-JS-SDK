@@ -232,7 +232,7 @@ class Scheduler {
         const polkadotApi = await this.getAPIClient();
         // TODO: hack until we can merge correct types into polkadotAPI
         const resultCodec = await polkadotApi.rpc.xcmpHandler.fees(encodedXt);
-        return resultCodec.toString();
+        return resultCodec.toPrimitive();
     }
     /**
      * validateTimestamps: validates timestamps. If not valid, will error.
