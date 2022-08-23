@@ -78,6 +78,28 @@ class Scheduler {
                             type: 'Vec<Hash>',
                         },
                     },
+                    xcmpHandler: {
+                        fees: {
+                            description: "Return XCMP fee for a automationTime.scheduleXCMPTask",
+                            params: [
+                                {
+                                    name: 'encoded_xt',
+                                    type: 'Bytes',
+                                }
+                            ],
+                            type: 'u64',
+                        },
+                        crossChainAccount: {
+                            description: "Find OAK's cross chain access account from an account",
+                            params: [
+                                {
+                                    name: 'account_id',
+                                    type: 'AccountId32',
+                                }
+                            ],
+                            type: 'AccountId32',
+                        },
+                    },
                 },
                 types: {
                     AutomationAction: {
@@ -185,6 +207,32 @@ class Scheduler {
         const polkadotApi = await this.getAPIClient();
         const resultCodec = await polkadotApi.rpc.automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id);
         return resultCodec.toJSON();
+    }
+    /**
+     * crossChainAccount: OAK's XCMP account on another chain.
+     * Account ID is required input
+     * Account ID will be returned.
+     * @param accountId
+     * @returns accountId
+     */
+    async crossChainAccount(accountId) {
+        const polkadotApi = await this.getAPIClient();
+        // TODO: hack until we can merge correct types into polkadotAPI
+        const resultCodec = await polkadotApi.rpc.xcmpHandler.crossChainAccount(accountId);
+        return resultCodec.toString();
+    }
+    /**
+     * fees: Retreive fees required for scheduling an XCMP task
+     * Encoded extrinsic is required input
+     * Fee will be returned
+     * @param encodedXt
+     * @returns fee
+     */
+    async fees(encodedXt) {
+        const polkadotApi = await this.getAPIClient();
+        // TODO: hack until we can merge correct types into polkadotAPI
+        const resultCodec = await polkadotApi.rpc.xcmpHandler.fees(encodedXt);
+        return resultCodec.toPrimitive();
     }
     /**
      * validateTimestamps: validates timestamps. If not valid, will error.
