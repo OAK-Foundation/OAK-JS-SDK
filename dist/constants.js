@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OakChains = exports.OakChainSchedulingLimit = exports.OakChainWebsockets = exports.SS58_PREFIX = exports.LOWEST_TRANSFERRABLE_AMOUNT = exports.RECURRING_TASK_LIMIT = exports.NO_DIFF = exports.ADDITIONAL_UNIT = exports.DAYS_IN_WEEK = exports.HOUR_IN_DAY = exports.MIN_IN_HOUR = exports.SEC_IN_MIN = exports.MS_IN_SEC = void 0;
+exports.AutomationAction = exports.OakChains = exports.OakChainSchedulingLimit = exports.OakChainWebsockets = exports.SS58_PREFIX = exports.LOWEST_TRANSFERRABLE_AMOUNT = exports.RECURRING_TASK_LIMIT = exports.NO_DIFF = exports.ADDITIONAL_UNIT = exports.DAYS_IN_WEEK = exports.HOUR_IN_DAY = exports.MIN_IN_HOUR = exports.SEC_IN_MIN = exports.MS_IN_SEC = void 0;
 exports.MS_IN_SEC = 1000;
 exports.SEC_IN_MIN = 60;
 exports.MIN_IN_HOUR = 60;
@@ -26,4 +26,11 @@ var OakChains;
     OakChains["STUR"] = "STUR";
     OakChains["TUR"] = "TUR";
 })(OakChains = exports.OakChains || (exports.OakChains = {}));
+var AutomationAction;
+(function (AutomationAction) {
+    AutomationAction["Notify"] = "Notify";
+    AutomationAction["NativeTransfer"] = "NativeTransfer";
+    AutomationAction["XCMP"] = "XCMP";
+    AutomationAction["AutoCompoundDelgatedStake"] = "AutoCompoundDelgatedStake";
+})(AutomationAction = exports.AutomationAction || (exports.AutomationAction = {}));
 //# sourceMappingURL=constants.js.map
