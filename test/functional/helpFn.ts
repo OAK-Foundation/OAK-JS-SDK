@@ -127,7 +127,7 @@ export const cancelTaskAndVerify = async (scheduler: Scheduler, observer: Observ
 
    // Make sure the task has been canceled.
    const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
-   expect(_.findIndex(tasksAfterCanceled, (task) => task === taskID)).toEqual(-1);
+   expect(_.findIndex(tasksAfterCanceled, [1, taskID])).toEqual(-1);
 }
 
 export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
@@ -155,7 +155,7 @@ export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasks, (task) => task === taskID)).not.toEqual(-1);
+  expect(_.findIndex(tasks, [1, taskID])).not.toEqual(-1);
 
   return taskID;
 }
@@ -192,7 +192,7 @@ export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, obse
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
   const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasksAfterCanceled, (task) => task === taskID)).not.toEqual(-1);
+  expect(_.findIndex(tasksAfterCanceled, [1, taskID])).not.toEqual(-1);
 
   return taskID;
 }

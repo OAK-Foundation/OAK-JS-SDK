@@ -39,6 +39,53 @@ class Scheduler {
                             ],
                             type: 'Hash',
                         },
+                        getTimeAutomationFees: {
+                            description: 'Retrieve automation fees',
+                            params: [
+                                {
+                                    name: 'action',
+                                    type: 'AutomationAction',
+                                },
+                                {
+                                    name: 'executions',
+                                    type: 'u32',
+                                },
+                            ],
+                            type: 'Balance',
+                        },
+                        calculateOptimalAutostaking: {
+                            description: 'Calculate the optimal period to restake',
+                            params: [
+                                {
+                                    name: 'principal',
+                                    type: 'i128',
+                                },
+                                {
+                                    name: 'collator',
+                                    type: 'AccountId',
+                                },
+                            ],
+                            type: 'AutostakingResult',
+                        },
+                        getAutoCompoundDelegatedStakeTaskIds: {
+                            description: 'Return autocompounding tasks by account',
+                            params: [
+                                {
+                                    name: 'account_id',
+                                    type: 'AccountId',
+                                },
+                            ],
+                            type: 'Vec<Hash>',
+                        },
+                    },
+                },
+                types: {
+                    AutomationAction: {
+                        _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelgatedStake'],
+                    },
+                    AutostakingResult: {
+                        period: 'i32',
+                        apy: 'f64',
                     },
                 },
             });
@@ -94,7 +141,7 @@ class Scheduler {
         return paymentInfo.partialFee;
     }
     /**
-     * GetTaskID: gets a txHash for a task.
+     * getTaskID: gets a txHash for a task.
      * Wallet Address and Provided ID are required inputs.
      * TxHash for a task will be returned.
      * @param address
@@ -106,6 +153,38 @@ class Scheduler {
         // TODO: hack until we can merge correct types into polkadotAPI
         const taskIdCodec = await polkadotApi.rpc.automationTime.generateTaskId(address, providedID);
         return taskIdCodec.toString();
+    }
+    /**
+     * getTimeAutomationFees
+     * @param action type
+     * @param executions
+     * @returns fee
+     */
+    async getTimeAutomationFees(action, executions) {
+        const polkadotApi = await this.getAPIClient();
+        const resultCodec = await polkadotApi.rpc.automationTime.getTimeAutomationFees(action, executions);
+        return resultCodec.toJSON();
+    }
+    /**
+     * calculateOptimalAutostaking
+     * @param principal
+     * @param collator
+     * @returns duration and apy result
+     */
+    async calculateOptimalAutostaking(principal, collator) {
+        const polkadotApi = await this.getAPIClient();
+        const resultCodec = await polkadotApi.rpc.automationTime.calculateOptimalAutostaking(principal, collator);
+        return resultCodec.toPrimitive();
+    }
+    /**
+     * getAutoCompoundDelegatedStakeTaskIds
+     * @param account
+     * @returns list of autocompounding tasks
+     */
+    async getAutoCompoundDelegatedStakeTaskIds(account_id) {
+        const polkadotApi = await this.getAPIClient();
+        const resultCodec = await polkadotApi.rpc.automationTime.getAutoCompoundDelegatedStakeTaskIds(account_id);
+        return resultCodec.toJSON();
     }
     /**
      * validateTimestamps: validates timestamps. If not valid, will error.
