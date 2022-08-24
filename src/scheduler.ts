@@ -103,12 +103,12 @@ export class Scheduler {
           },
           xcmpHandler: {
             fees: {
-              description: "Return XCMP fee for a automationTime.scheduleXCMPTask",
+              description: 'Return XCMP fee for a automationTime.scheduleXCMPTask',
               params: [
                 {
                   name: 'encoded_xt',
                   type: 'Bytes',
-                }
+                },
               ],
               type: 'u64',
             },
@@ -118,7 +118,7 @@ export class Scheduler {
                 {
                   name: 'account_id',
                   type: 'AccountId32',
-                }
+                },
               ],
               type: 'AccountId32',
             },
@@ -267,7 +267,6 @@ export class Scheduler {
     const resultCodec = await (polkadotApi.rpc as any).xcmpHandler.fees(encodedXt)
     return resultCodec.toPrimitive()
   }
-
 
   /**
    * validateTimestamps: validates timestamps. If not valid, will error.
