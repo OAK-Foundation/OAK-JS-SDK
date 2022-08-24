@@ -9,6 +9,7 @@ on:
     # Please set the start time (UTC time zone).
     # https://docs.github.com/cn/actions/using-workflows/events-that-trigger-workflows#schedule
     - cron: '0 12 * * MON-FRI'
+  workflow_dispatch:
 
 jobs:
   test:
