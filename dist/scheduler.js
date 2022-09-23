@@ -103,7 +103,7 @@ class Scheduler {
                 },
                 types: {
                     AutomationAction: {
-                        _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelgatedStake'],
+                        _enum: ['Notify', 'NativeTransfer', 'XCMP', 'AutoCompoundDelegatedStake'],
                     },
                     AutostakingResult: {
                         period: 'i32',
