@@ -28,5 +28,5 @@ export enum AutomationAction {
   Notify = 'Notify',
   NativeTransfer = 'NativeTransfer',
   XCMP = 'XCMP',
-  AutoCompoundDelgatedStake = 'AutoCompoundDelgatedStake',
+  AutoCompoundDelegatedStake = 'AutoCompoundDelegatedStake',
 }
