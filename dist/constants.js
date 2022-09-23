@@ -31,6 +31,6 @@ var AutomationAction;
     AutomationAction["Notify"] = "Notify";
     AutomationAction["NativeTransfer"] = "NativeTransfer";
     AutomationAction["XCMP"] = "XCMP";
-    AutomationAction["AutoCompoundDelgatedStake"] = "AutoCompoundDelgatedStake";
+    AutomationAction["AutoCompoundDelegatedStake"] = "AutoCompoundDelegatedStake";
 })(AutomationAction = exports.AutomationAction || (exports.AutomationAction = {}));
 //# sourceMappingURL=constants.js.map
