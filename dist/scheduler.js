@@ -372,6 +372,15 @@ class Scheduler {
         });
         return signedExtrinsic.toHex();
     }
+    async buildScheduleDynamicDispatchTask(address, providedID, schedule, call, signer) {
+        const polkadotApi = await this.getAPIClient();
+        const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](providedID, schedule, call);
+        const signedExtrinsic = await extrinsic.signAsync(address, {
+            signer,
+            nonce: -1,
+        });
+        return signedExtrinsic.toHex();
+    }
     /**
      * BuildCancelTaskExtrinsic: builds extrinsic as a hex string for cancelling a task.
      * User must provide txHash for the task and wallet address used to schedule the task.
