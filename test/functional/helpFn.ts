@@ -15,6 +15,8 @@ import { Observer } from '../../src/observer'
 export const SECTION_NAME = 'automationTime';
 export const MIN_RUNNING_TEST_BALANCE = 20000000000;
 export const TRANSFER_AMOUNT = 1000000000;
+export const RECEIVER_ADDRESS = '66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3';
+const RECURRING_FREQUENCY = 3600;
 
 export const generateProviderId = () => `functional-test-${new Date().getTime()}-${_.random(0, Number.MAX_SAFE_INTEGER, false)}`;
 
@@ -126,8 +128,8 @@ export const cancelTaskAndVerify = async (scheduler: Scheduler, observer: Observ
   expect(taskIdOnChain.toString()).toEqual(taskID);
 
    // Make sure the task has been canceled.
-   const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
-   expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).toEqual(-1);
+   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
+   expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toEqual(undefined);
 }
 
 export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
@@ -155,7 +157,7 @@ export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasks!.tasks, [1, taskID])).not.toEqual(-1);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toEqual(undefined);
 
   return taskID;
 }
@@ -191,8 +193,47 @@ export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, obse
 
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
-  const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).not.toEqual(-1);
+  const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toEqual(undefined);
+
+  return taskID;
+}
+
+export const scheduleDynamicDispatchTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
+  // Send extrinsic and get extrinsicHash, blockHash.
+  const { providedID, schedule, call } = extrinsicParams;
+  await checkBalance(keyringPair);
+  const hexString = await scheduler.buildScheduleDynamicDispatchTask(keyringPair, providedID, schedule, call);
+  const { extrinsicHash, blockHash } = await sendExtrinsic(scheduler, hexString);
+
+  // Fetch extrinsic from chain
+  const extrinsic = await findExtrinsicFromChain(scheduler.api, blockHash, extrinsicHash);
+
+  //  Verify arguments
+  const { section, method, args } = extrinsic.method;
+  const [providedIdOnChainHex, scheduleOnChain, callOnChain] = args;
+  const scheduleObject =  scheduleOnChain.toJSON()
+
+  expect(section).toEqual(SECTION_NAME);
+  expect(method).toEqual('scheduleDynamicDispatchTask');
+  const providedIdOnChain = hexToAscii(providedIdOnChainHex.toString());
+  expect(providedIdOnChain).toEqual(providedID);
+
+  const { recurring, fixed } = scheduleObject;
+  let firstExecutionTime = -1;
+  if (recurring) {
+    const { nextExecutionTime, frequency } = recurring;
+    expect(frequency).toEqual(RECURRING_FREQUENCY);
+    firstExecutionTime = nextExecutionTime;
+  } else {
+    const { executionTimes } = fixed;
+    firstExecutionTime = executionTimes[0];
+  }
+
+  // Make use the task has been scheduled
+  const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
+  const tasks = await observer.getAutomationTimeScheduledTasks(firstExecutionTime);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toBeUndefined();
 
   return taskID;
 }
@@ -200,7 +241,7 @@ export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, obse
 export const getNativeTransferExtrinsicParams = () => {
   return {
     amount: TRANSFER_AMOUNT,
-    receiverAddress: "66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3",
+    receiverAddress: RECEIVER_ADDRESS,
     providedID: generateProviderId(),
     executionTimestamps: _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 5, 0), (time) => time / MS_IN_SEC),
   }
@@ -211,6 +252,31 @@ export const getNotifyExtrinsicParams = () => ({
   providedID: generateProviderId(),
   executionTimestamps: _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 3, 7), (time) => time / MS_IN_SEC),
 });
+
+export const getRecurringDynamicDispatchExtrinsicParams = async () => {
+  const [hourTime] = _.map(new Recurrer().getHourlyRecurringTimestamps(Date.now(), 1), (time) => time / MS_IN_SEC);
+  const polkadotApi = await getPolkadotApi();
+  return {
+    providedID: generateProviderId(),
+    schedule: {
+      Recurring: {
+        nextExecutionTime: hourTime,
+        frequency: RECURRING_FREQUENCY,
+      }
+    },
+    call: polkadotApi.tx['balances']['transfer'](RECEIVER_ADDRESS, TRANSFER_AMOUNT),
+  }
+}
+
+export const getFixedDynamicDispatchExtrinsicParams = async () => {
+  const executionTimes = _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 3, 7), (time) => time / MS_IN_SEC);
+  const polkadotApi = await getPolkadotApi();
+  return {
+    providedID: generateProviderId(),
+    schedule: { Fixed: { executionTimes } },
+    call: polkadotApi.tx['balances']['transfer'](RECEIVER_ADDRESS, TRANSFER_AMOUNT),
+  }
+}
 
 export const getContext = async () => ({
   scheduler: new Scheduler(OakChains.STUR),
