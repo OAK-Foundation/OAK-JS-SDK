@@ -434,11 +434,7 @@ export class Scheduler {
     signer?: Signer
   ): Promise<HexString> {
     const polkadotApi = await this.getAPIClient()
-    const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](
-      providedID,
-      schedule,
-      call,
-    )
+    const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](providedID, schedule, call)
     const signedExtrinsic = await extrinsic.signAsync(address, {
       signer,
       nonce: -1,
