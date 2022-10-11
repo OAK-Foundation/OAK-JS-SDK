@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { OakChains, AutomationAction } from '../../src/constants'
 import { Scheduler } from '../../src/scheduler';
-import { COLLATOR_ADDRESS } from './helpFn';
+import { getPolkadotApi } from './helpFn';
 
 beforeEach(() => {
   jest.setTimeout(540000);
@@ -16,7 +16,13 @@ test('scheduler.getTimeAutomationFees works', async () => {
 
 test('scheduler.calculateOptimalAutostaking works', async () => {
   const scheduler = new Scheduler(OakChains.STUR);
-  const result = await scheduler.calculateOptimalAutostaking(10000000000, COLLATOR_ADDRESS);
+  const polkadotApi = await getPolkadotApi();
+  
+  // Find first collator
+  const pool = (await polkadotApi.query.parachainStaking.candidatePool()).toJSON() as { owner }[];
+  const { owner } = pool[0];
+
+  const result = await scheduler.calculateOptimalAutostaking(10000000000, owner);
   expect(Object.keys(result).sort()).toEqual(["apy", "period"].sort());
 });
 

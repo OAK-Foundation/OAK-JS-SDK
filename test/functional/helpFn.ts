@@ -16,7 +16,6 @@ export const SECTION_NAME = 'automationTime';
 export const MIN_RUNNING_TEST_BALANCE = 20000000000;
 export const TRANSFER_AMOUNT = 1000000000;
 export const RECEIVER_ADDRESS = '66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3';
-export const COLLATOR_ADDRESS = '69NiyRvjQtQEGcQesiZgTyzHndUeGXZAaHYNgBGQtzhUg6R7';
 const RECURRING_FREQUENCY = 3600;
 
 /**
@@ -74,7 +73,8 @@ export const hexToAscii = (hexStr: String, hasPrefix = false) => {
 }
 
 export const getPolkadotApi = async () : Promise<ApiPromise> => {
-  const wsProvider = new WsProvider(OakChainWebsockets[OakChains.STUR]);
+  const providerUrl = process.env.PROVIDER_URL || OakChainWebsockets[OakChains.STUR]; // PROVIDER_URL environment variable for local testing
+  const wsProvider = new WsProvider(providerUrl);
   const polkadotApi = await ApiPromise.create({
     provider: wsProvider,
     rpc: {
