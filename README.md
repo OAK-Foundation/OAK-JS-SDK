@@ -32,12 +32,14 @@ npm run test
 
 We need to to setup a SENDER_MNEMONIC environment variable for the test and ensure that there are enough tokens in this account (recommended the balance is greater than or equals to 30 UNIT).
 
+If you want to test for a local test chain, you can set the PROVIDER_URL environment variable.
+
 ```
-SENDER_MNEMONIC="<SENDER_MNEMONIC>" npm run test:functional
+SENDER_MNEMONIC="<SENDER_MNEMONIC>" PROVIDER_URL="<SENDER_MNEMONIC>" npm run test:functional
 ```
 
 **Test all**
 
 ```
-SENDER_MNEMONIC="<SENDER_MNEMONIC>" npm run test:all
+SENDER_MNEMONIC="<SENDER_MNEMONIC>" PROVIDER_URL="<SENDER_MNEMONIC>" npm run test:all
 ```

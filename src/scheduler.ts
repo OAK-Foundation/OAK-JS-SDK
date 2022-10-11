@@ -34,7 +34,8 @@ export class Scheduler {
 
   constructor(chain: OakChains) {
     this.chain = chain
-    this.wsProvider = new WsProvider(OakChainWebsockets[chain])
+    const providerUrl = process.env['PROVIDER_URL'] || OakChainWebsockets[chain] // PROVIDER_URL environment variable for local testing
+    this.wsProvider = new WsProvider(providerUrl)
     this.schedulingTimeLimit = OakChainSchedulingLimit[chain]
   }
 
@@ -429,11 +430,34 @@ export class Scheduler {
   async buildScheduleDynamicDispatchTask(
     address: AddressOrPair,
     providedID: string,
-    schedule: object,
+    schedule: { recurring: { frequency: number, nextExecutionTime: number }, fixed: { executionTimes: Array<number> } },
     call: object,
     signer?: Signer
   ): Promise<HexString> {
-    const polkadotApi = await this.getAPIClient()
+    const polkadotApi = await this.getAPIClient();
+
+    if (schedule.recurring) {
+      const { frequency, nextExecutionTime } = schedule.recurring;
+      if (!_.isNumber(frequency) || frequency <= 0) {
+        throw new Error("frequency must be a positive integer");
+      }
+      if (!_.isNumber(nextExecutionTime) || nextExecutionTime <= 0) {
+        throw new Error("nextExecutionTime must be a positive integer");
+      }
+    } else {
+      const { executionTimes } = schedule.fixed;
+      if (!_.isArray(executionTimes)) {
+        throw new Error("executionTimes is not an array");
+      } 
+      if (_.isEmpty(executionTimes)) {
+        throw new Error("executionTimes is empty");
+      } 
+    }
+
+    if (_.isNil(call)) {
+      throw new Error("call is null or undefined");
+    }
+
     const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](providedID, schedule, call)
     const signedExtrinsic = await extrinsic.signAsync(address, {
       signer,
