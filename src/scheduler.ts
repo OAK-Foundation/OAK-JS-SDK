@@ -32,10 +32,15 @@ export class Scheduler {
   chain: OakChains
   schedulingTimeLimit: number
 
-  constructor(chain: OakChains) {
+  /**
+   * constructor
+   * @param chain 
+   * @param options { providerUrl }, You can specify a custom provider url.
+   */
+   constructor(chain: OakChains, options: { providerUrl: string | undefined}) {
+    const { providerUrl } = options || {};
     this.chain = chain
-    const providerUrl = process.env['PROVIDER_URL'] || OakChainWebsockets[chain] // PROVIDER_URL environment variable for local testing
-    this.wsProvider = new WsProvider(providerUrl)
+    this.wsProvider = new WsProvider(providerUrl || OakChainWebsockets[chain]);
     this.schedulingTimeLimit = OakChainSchedulingLimit[chain]
   }
 

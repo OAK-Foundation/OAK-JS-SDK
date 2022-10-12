@@ -18,8 +18,14 @@ const constants_1 = require("./constants");
  * @param chain: OakChains ("STUR"/"TUR")
  */
 class Observer {
-    constructor(chain) {
-        this.wsProvider = new api_1.WsProvider(constants_1.OakChainWebsockets[chain]);
+    /**
+     * constructor
+     * @param chain
+     * @param options { providerUrl }, You can specify a custom provider url.
+     */
+    constructor(chain, options) {
+        const { providerUrl } = options || {};
+        this.wsProvider = new api_1.WsProvider(providerUrl || constants_1.OakChainWebsockets[chain]);
     }
     async getAPIClient() {
         if (_.isNil(this.api)) {
