@@ -393,6 +393,9 @@ class Scheduler {
                 throw new Error("executionTimes is empty");
             }
         }
+        if (_.isNil(call)) {
+            throw new Error("call is null or undefined");
+        }
         const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](providedID, schedule, call);
         const signedExtrinsic = await extrinsic.signAsync(address, {
             signer,
