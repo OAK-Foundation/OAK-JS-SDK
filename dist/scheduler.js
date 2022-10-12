@@ -12,7 +12,8 @@ const constants_1 = require("./constants");
 class Scheduler {
     constructor(chain) {
         this.chain = chain;
-        this.wsProvider = new api_1.WsProvider(constants_1.OakChainWebsockets[chain]);
+        const providerUrl = process.env['PROVIDER_URL'] || constants_1.OakChainWebsockets[chain]; // PROVIDER_URL environment variable for local testing
+        this.wsProvider = new api_1.WsProvider(providerUrl);
         this.schedulingTimeLimit = constants_1.OakChainSchedulingLimit[chain];
     }
     /**
@@ -366,6 +367,36 @@ class Scheduler {
         const secondTimestamps = this.convertToSeconds(timestamps);
         const polkadotApi = await this.getAPIClient();
         const extrinsic = polkadotApi.tx['automationTime']['scheduleNativeTransferTask'](providedID, secondTimestamps, receivingAddress, amount);
+        const signedExtrinsic = await extrinsic.signAsync(address, {
+            signer,
+            nonce: -1,
+        });
+        return signedExtrinsic.toHex();
+    }
+    async buildScheduleDynamicDispatchTask(address, providedID, schedule, call, signer) {
+        const polkadotApi = await this.getAPIClient();
+        if (schedule.recurring) {
+            const { frequency, nextExecutionTime } = schedule.recurring;
+            if (!_.isNumber(frequency) || frequency <= 0) {
+                throw new Error("frequency must be a positive integer");
+            }
+            if (!_.isNumber(nextExecutionTime) || nextExecutionTime <= 0) {
+                throw new Error("nextExecutionTime must be a positive integer");
+            }
+        }
+        else {
+            const { executionTimes } = schedule.fixed;
+            if (!_.isArray(executionTimes)) {
+                throw new Error("executionTimes is not an array");
+            }
+            if (_.isEmpty(executionTimes)) {
+                throw new Error("executionTimes is empty");
+            }
+        }
+        if (_.isNil(call)) {
+            throw new Error("call is null or undefined");
+        }
+        const extrinsic = polkadotApi.tx['automationTime']['scheduleDynamicDispatchTask'](providedID, schedule, call);
         const signedExtrinsic = await extrinsic.signAsync(address, {
             signer,
             nonce: -1,

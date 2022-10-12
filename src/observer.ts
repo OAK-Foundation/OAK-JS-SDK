@@ -72,10 +72,12 @@ export class Observer {
    * @param inputTime
    * @returns 0xstring[]
    */
-  async getAutomationTimeScheduledTasks(inputTime: number): Promise<{ tasks: string[][] } | null> {
+  async getAutomationTimeScheduledTasks(inputTime: number): Promise<string[][]> {
     const polkadotApi = await this.getAPIClient()
     const resultCodec = await polkadotApi.query['automationTime']['scheduledTasksV3'](inputTime)
-    return resultCodec.toJSON() as { tasks: string[][] } | null
+    const tasksAfterCanceled = resultCodec.toJSON() as { tasks: string[][] }
+    const tasks = tasksAfterCanceled ? tasksAfterCanceled.tasks : []
+    return tasks
   }
 
   /**

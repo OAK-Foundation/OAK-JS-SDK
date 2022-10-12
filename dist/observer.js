@@ -67,7 +67,9 @@ class Observer {
     async getAutomationTimeScheduledTasks(inputTime) {
         const polkadotApi = await this.getAPIClient();
         const resultCodec = await polkadotApi.query['automationTime']['scheduledTasksV3'](inputTime);
-        return resultCodec.toJSON();
+        const tasksAfterCanceled = resultCodec.toJSON();
+        const tasks = tasksAfterCanceled ? tasksAfterCanceled.tasks : [];
+        return tasks;
     }
     /**
      * Gets an Automation Task given a task ID. This will have all data and metadata

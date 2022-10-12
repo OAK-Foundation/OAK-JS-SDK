@@ -15,9 +15,21 @@ import { Observer } from '../../src/observer'
 export const SECTION_NAME = 'automationTime';
 export const MIN_RUNNING_TEST_BALANCE = 20000000000;
 export const TRANSFER_AMOUNT = 1000000000;
+export const RECEIVER_ADDRESS = '66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3';
+const RECURRING_FREQUENCY = 3600;
 
+/**
+ * generateProviderId: Generate a provider Id
+ * @returns providerId
+ */
 export const generateProviderId = () => `functional-test-${new Date().getTime()}-${_.random(0, Number.MAX_SAFE_INTEGER, false)}`;
 
+/**
+ * sendExtrinsic: Send extrinsic to chain
+ * @param scheduler 
+ * @param extrinsicHex 
+ * @returns promise
+ */
 export const sendExtrinsic = async (scheduler: Scheduler, extrinsicHex: HexString) : Promise<{extrinsicHash: string, blockHash: string}> => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -61,7 +73,8 @@ export const hexToAscii = (hexStr: String, hasPrefix = false) => {
 }
 
 export const getPolkadotApi = async () : Promise<ApiPromise> => {
-  const wsProvider = new WsProvider(OakChainWebsockets[OakChains.STUR]);
+  const providerUrl = process.env.PROVIDER_URL || OakChainWebsockets[OakChains.STUR]; // PROVIDER_URL environment variable for local testing
+  const wsProvider = new WsProvider(providerUrl);
   const polkadotApi = await ApiPromise.create({
     provider: wsProvider,
     rpc: {
@@ -86,12 +99,20 @@ export const getPolkadotApi = async () : Promise<ApiPromise> => {
   return polkadotApi;
 }
 
+/**
+ * checkBalance: Check test account balance
+ * @param keyringPair 
+ */
 export const checkBalance = async (keyringPair: KeyringPair) => {
   const polkadotApi = await getPolkadotApi();
   const { data: balanceRaw } = await polkadotApi.query.system.account(keyringPair.address) as any;
   expect((<BalanceOf>balanceRaw.free).gte(new BN(MIN_RUNNING_TEST_BALANCE))).toEqual(true);
 };
 
+/**
+ * getKeyringPair: Get keyring pair for testing
+ * @returns keyring pair
+ */
 export const getKeyringPair = async () => {
   await waitReady();
   if (_.isEmpty(process.env.SENDER_MNEMONIC)) {
@@ -103,6 +124,13 @@ export const getKeyringPair = async () => {
   return keyringPair;
 }
 
+/**
+ * findExtrinsicFromChain: Find extrinsic from chain
+ * @param polkadotApi 
+ * @param blockHash 
+ * @param extrinsicHash 
+ * @returns extrinsic
+ */
 export const findExtrinsicFromChain = async (polkadotApi: ApiPromise, blockHash: string, extrinsicHash: string) : Promise<Extrinsic> => {
   const signedBlock = await polkadotApi.rpc.chain.getBlock(blockHash);
   const { block: { extrinsics } } = signedBlock;
@@ -110,6 +138,14 @@ export const findExtrinsicFromChain = async (polkadotApi: ApiPromise, blockHash:
   return extrinsic;
 }
 
+/**
+ * cancelTaskAndVerify: Cancel task and verify on chain
+ * @param scheduler
+ * @param observer
+ * @param keyringPair
+ * @param extrinsicParams
+ * @returns taskID
+ */
 export const cancelTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, taskID: string, executionTimestamp: number) => {
   const cancelExtrinsicHex = await scheduler.buildCancelTaskExtrinsic(keyringPair, taskID);
   const { extrinsicHash, blockHash } = await sendExtrinsic(scheduler, cancelExtrinsicHex);
@@ -126,10 +162,18 @@ export const cancelTaskAndVerify = async (scheduler: Scheduler, observer: Observ
   expect(taskIdOnChain.toString()).toEqual(taskID);
 
    // Make sure the task has been canceled.
-   const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
-   expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).toEqual(-1);
+   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
+   expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toBeUndefined();
 }
 
+/**
+ * scheduleNotifyTaskAndVerify: Schedule notify task and verify extrinsic parameters on chain
+ * @param scheduler
+ * @param observer
+ * @param keyringPair
+ * @param extrinsicParams
+ * @returns taskID
+ */
 export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
   const { providedID, executionTimestamps, message } = extrinsicParams;
   // Send notify extrinsic and get extrinsicHash, blockHash.
@@ -155,11 +199,19 @@ export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasks!.tasks, [1, taskID])).not.toEqual(-1);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toBeUndefined();
 
   return taskID;
 }
 
+/**
+ * scheduleNativeTransferAndVerify: Schedule native transfer task and verify extrinsic parameters on chain
+ * @param scheduler
+ * @param observer
+ * @param keyringPair
+ * @param extrinsicParams
+ * @returns taskID
+ */
 export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
   // Send extrinsic and get extrinsicHash, blockHash.
   const { providedID, executionTimestamps, receiverAddress, amount } = extrinsicParams;
@@ -191,27 +243,116 @@ export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, obse
 
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
-  const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).not.toEqual(-1);
+  const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toBeUndefined();
 
   return taskID;
 }
 
+/**
+ * scheduleDynamicDispatchTaskAndVerify: Schedule dynamic dispath task and verify extrinsic parameters on chain
+ * @param scheduler
+ * @param observer
+ * @param keyringPair
+ * @param extrinsicParams
+ * @returns taskID
+ */
+export const scheduleDynamicDispatchTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
+  // Send extrinsic and get extrinsicHash, blockHash.
+  const { providedID, schedule, call } = extrinsicParams;
+  await checkBalance(keyringPair);
+  const hexString = await scheduler.buildScheduleDynamicDispatchTask(keyringPair, providedID, schedule, call);
+  const { extrinsicHash, blockHash } = await sendExtrinsic(scheduler, hexString);
+
+  // Fetch extrinsic from chain
+  const extrinsic = await findExtrinsicFromChain(scheduler.api, blockHash, extrinsicHash);
+
+  //  Verify arguments
+  const { section, method, args } = extrinsic.method;
+  const [providedIdOnChainHex, scheduleOnChain, callOnChain] = args;
+  const scheduleObject =  scheduleOnChain.toJSON()
+
+  expect(section).toEqual(SECTION_NAME);
+  expect(method).toEqual('scheduleDynamicDispatchTask');
+  const providedIdOnChain = hexToAscii(providedIdOnChainHex.toString());
+  expect(providedIdOnChain).toEqual(providedID);
+  expect(callOnChain).toBeInstanceOf(Object);
+
+  const { recurring, fixed } = scheduleObject;
+  let firstExecutionTime = -1;
+  if (recurring) {
+    const { nextExecutionTime, frequency } = recurring;
+    expect(frequency).toEqual(RECURRING_FREQUENCY);
+    firstExecutionTime = nextExecutionTime;
+  } else {
+    const { executionTimes } = fixed;
+    firstExecutionTime = executionTimes[0];
+  }
+
+  // Make use the task has been scheduled
+  const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
+  const tasks = await observer.getAutomationTimeScheduledTasks(firstExecutionTime);
+  expect(_.find(tasks, (task) => !_.isNil(_.find(task, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)))).toBeUndefined();
+
+  return taskID;
+}
+
+/**
+ * getNativeTransferExtrinsicParams: Get parameters of native transfer extrinsic for testing
+ * @returns parameter object: { providedID, amount, receiverAddress, executionTimestamps }
+ */
 export const getNativeTransferExtrinsicParams = () => {
   return {
     amount: TRANSFER_AMOUNT,
-    receiverAddress: "66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3",
+    receiverAddress: RECEIVER_ADDRESS,
     providedID: generateProviderId(),
     executionTimestamps: _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 5, 0), (time) => time / MS_IN_SEC),
   }
 }
 
+/**
+ * getNotifyExtrinsicParams: Get parameters of notify extrinsic for testing
+ * @returns parameter object: { providedID, message, executionTimestamps }
+ */
 export const getNotifyExtrinsicParams = () => ({
   message: 'notify',
   providedID: generateProviderId(),
   executionTimestamps: _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 3, 7), (time) => time / MS_IN_SEC),
 });
 
+/**
+ * getDynamicDispatchExtrinsicParams: Get parameters of recurring dynamic dispatch extrinsic for testing
+ * @param scheduleType
+ * @returns parameter object: { providedID, schedule, call }
+ */
+export const getDynamicDispatchExtrinsicParams = async (scheduleType: string) => {
+  const polkadotApi = await getPolkadotApi();
+
+  let schedule = {};
+  if (scheduleType === 'recurring') {
+    const [nextExecutionTime] = _.map(new Recurrer().getHourlyRecurringTimestamps(Date.now(), 1), (time) => time / MS_IN_SEC);
+    schedule =  {
+      recurring: {
+        nextExecutionTime,
+        frequency: RECURRING_FREQUENCY,
+      }
+    };
+  } else {
+    const executionTimes = _.map(new Recurrer().getDailyRecurringTimestamps(Date.now(), 3, 7), (time) => time / MS_IN_SEC);
+    schedule =  { fixed: { executionTimes } };
+  }
+
+  return {
+    providedID: generateProviderId(),
+    schedule,
+    call: polkadotApi.tx['balances']['transfer'](RECEIVER_ADDRESS, TRANSFER_AMOUNT),
+  }
+}
+
+/**
+ * getContext: Get test context
+ * @returns context object: { scheduler, observer, keyringPair }
+ */
 export const getContext = async () => ({
   scheduler: new Scheduler(OakChains.STUR),
   observer: new Observer(OakChains.STUR),
