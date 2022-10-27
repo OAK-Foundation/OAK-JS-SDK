@@ -16,6 +16,8 @@ export const SECTION_NAME = 'automationTime';
 export const MIN_RUNNING_TEST_BALANCE = 20000000000;
 export const TRANSFER_AMOUNT = 1000000000;
 
+type Task = [string, string];
+
 export const generateProviderId = () => `functional-test-${new Date().getTime()}-${_.random(0, Number.MAX_SAFE_INTEGER, false)}`;
 
 export const sendExtrinsic = async (scheduler: Scheduler, extrinsicHex: HexString) : Promise<{extrinsicHash: string, blockHash: string}> => {
@@ -126,8 +128,8 @@ export const cancelTaskAndVerify = async (scheduler: Scheduler, observer: Observ
   expect(taskIdOnChain.toString()).toEqual(taskID);
 
    // Make sure the task has been canceled.
-   const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
-   expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).toEqual(-1);
+   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamp);
+   expect(_.find(tasks, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)).toBeUndefined();
 }
 
 export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer: Observer, keyringPair: KeyringPair, extrinsicParams: any) => {
@@ -155,7 +157,7 @@ export const scheduleNotifyTaskAndVerify = async (scheduler: Scheduler, observer
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
   const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasks!.tasks, [1, taskID])).not.toEqual(-1);
+  expect(_.find(tasks, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)).toMatchObject<Task>([keyringPair.address, taskID]);
 
   return taskID;
 }
@@ -191,8 +193,8 @@ export const scheduleNativeTransferAndVerify = async (scheduler: Scheduler, obse
 
   // Make use the task has been scheduled
   const taskID = (await scheduler.getTaskID(keyringPair.address, providedID)).toString();
-  const tasksAfterCanceled = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
-  expect(_.findIndex(tasksAfterCanceled!.tasks, [1, taskID])).not.toEqual(-1);
+  const tasks = await observer.getAutomationTimeScheduledTasks(executionTimestamps[0]);
+  expect(_.find(tasks, ([_account, scheduledTaskId]) => scheduledTaskId === taskID)).toMatchObject<Task>([keyringPair.address, taskID]);
 
   return taskID;
 }
