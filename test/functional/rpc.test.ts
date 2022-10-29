@@ -9,13 +9,15 @@ beforeEach(() => {
 });
 
 test('scheduler.getTimeAutomationFees works', async () => {
-  const scheduler = new Scheduler(OakChains.STUR);
+  const options = { providerUrl: process.env.PROVIDER_URL };
+  const scheduler = new Scheduler(OakChains.STUR, options);
   const fee = await scheduler.getTimeAutomationFees(AutomationAction.Notify, 3);
   expect(fee > 0).toEqual(true);
 });
 
 test('scheduler.calculateOptimalAutostaking works', async () => {
-  const scheduler = new Scheduler(OakChains.STUR);
+  const options = { providerUrl: process.env.PROVIDER_URL };
+  const scheduler = new Scheduler(OakChains.STUR, options);
   const polkadotApi = await getPolkadotApi();
   
   // Find first collator
@@ -27,7 +29,8 @@ test('scheduler.calculateOptimalAutostaking works', async () => {
 });
 
 test('scheduler.getAutoCompoundDelegatedStakeTaskIds works', async () => {
-  const scheduler = new Scheduler(OakChains.STUR);
+  const options = { providerUrl: process.env.PROVIDER_URL };
+  const scheduler = new Scheduler(OakChains.STUR, options);
   const result = await scheduler.getAutoCompoundDelegatedStakeTaskIds("68vqVx27xVYeCkqJTQnyXrcMCaKADUa7Rywn9TSrUZyp4NGP");
   expect(_.isArray(result)).toEqual(true);
 });
