@@ -1,0 +1,17 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "schedule:fixed": "node src/scheduleFixedDynamicDispatchTask.js",
+    "schedule:recurring": "node src/scheduleRecurringDynamicDispatchTask.js"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "oak-js-library": "github:OAK-Foundation/OAK-JS-SDK#v0.5.0-frontend-rc1"
+  },
+  "author": "",
+  "license": "ISC"
+}

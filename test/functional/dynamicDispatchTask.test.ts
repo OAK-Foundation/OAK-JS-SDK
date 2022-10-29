@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { getContext, scheduleDynamicDispatchTaskAndVerify, cancelTaskAndVerify, getDynamicDispatchExtrinsicParams, SECTION_NAME, sendExtrinsic } from './helpFn';
 
+// Expiration of each test is set to 540 seconds.
 beforeEach(() => { jest.setTimeout(540000); });
 
 /**
