@@ -354,8 +354,12 @@ export const getDynamicDispatchExtrinsicParams = async (scheduleType: string) =>
  * getContext: Get test context
  * @returns context object: { scheduler, observer, keyringPair }
  */
-export const getContext = async () => ({
-  scheduler: new Scheduler(OakChains.STUR),
-  observer: new Observer(OakChains.STUR),
-  keyringPair: await getKeyringPair(),
-});
+export const getContext = async () => {
+  const chain = OakChains.STUR;
+  const options = { providerUrl: process.env.PROVIDER_URL };
+  return {
+    scheduler: new Scheduler(chain, options),
+    observer: new Observer(chain, options),
+    keyringPair: await getKeyringPair(),
+  };
+}

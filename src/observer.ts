@@ -21,8 +21,14 @@ export class Observer {
   wsProvider: WsProvider
   api: ApiPromise
 
-  constructor(chain: OakChains) {
-    this.wsProvider = new WsProvider(OakChainWebsockets[chain])
+  /**
+   * constructor
+   * @param chain 
+   * @param options { providerUrl }, You can specify a custom provider url.
+   */
+  constructor(chain: OakChains, options: { providerUrl: string | undefined }) {
+    const { providerUrl } = options || {};
+    this.wsProvider = new WsProvider(providerUrl || OakChainWebsockets[chain])
   }
 
   private async getAPIClient(): Promise<ApiPromise> {

@@ -10,10 +10,15 @@ const constants_1 = require("./constants");
  * @param chain: OakChains
  */
 class Scheduler {
-    constructor(chain) {
+    /**
+     * constructor
+     * @param chain
+     * @param options { providerUrl }, You can specify a custom provider url.
+     */
+    constructor(chain, options) {
+        const { providerUrl } = options || {};
         this.chain = chain;
-        const providerUrl = process.env['PROVIDER_URL'] || constants_1.OakChainWebsockets[chain]; // PROVIDER_URL environment variable for local testing
-        this.wsProvider = new api_1.WsProvider(providerUrl);
+        this.wsProvider = new api_1.WsProvider(providerUrl || constants_1.OakChainWebsockets[chain]);
         this.schedulingTimeLimit = constants_1.OakChainSchedulingLimit[chain];
     }
     /**
