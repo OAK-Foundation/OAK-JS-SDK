@@ -14,6 +14,7 @@ import { Observer } from '../../src/observer'
 
 export const SECTION_NAME = 'automationTime';
 export const MIN_RUNNING_TEST_BALANCE = 20000000000;
+// how many STUR is it?
 export const TRANSFER_AMOUNT = 1000000000;
 export const RECEIVER_ADDRESS = '66fhJwYLiK87UDXYDQP9TfYdHpeEyMvQ3MK8Z6GgWAdyyCL3';
 const RECURRING_FREQUENCY = 3600;
